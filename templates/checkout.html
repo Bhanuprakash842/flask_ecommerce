@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-20">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div>
+            <h1 class="text-4xl font-bold mb-8">Checkout</h1>
+            <form id="checkoutForm" class="space-y-8">
+                <div class="space-y-6">
+                    <h3 class="text-lg font-bold text-primary">Shipping Information</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="address" required placeholder="Full Address" class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-primary/30 outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" placeholder="City" class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 outline-none">
+                            <input type="text" placeholder="Zip Code" class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="text-lg font-bold text-primary">Payment Method</h3>
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-4 p-4 rounded-xl border border-primary bg-primary/5 cursor-pointer">
+                            <input type="radio" name="payment_method" value="Credit Card" checked class="w-5 h-5 accent-primary">
+                            <span class="font-bold">Credit Card</span>
+                        </label>
+                        <label class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-primary transition-all cursor-pointer">
+                            <input type="radio" name="payment_method" value="PayPal" class="w-5 h-5 accent-primary">
+                            <span class="font-bold">PayPal</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full btn-primary text-white py-5 rounded-2xl font-bold text-xl shadow-lg">Pay ${{ "{:,.2f}".format(total) }}</button>
+            </form>
+        </div>
+        
+        <div class="hidden md:block">
+            <div class="bg-white p-8 rounded-3xl border border-secondary/20 shadow-sm">
+                <h3 class="font-bold mb-6">Order Details</h3>
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="font-bold">${{ "{:,.2f}".format(total) }}</span>
+                </div>
+                <div class="flex justify-between mb-8 pb-8 border-b">
+                    <span class="text-gray-500">Shipping</span>
+                    <span class="font-bold text-green-500">Free</span>
+                </div>
+                <div class="flex justify-between items-end">
+                    <span class="text-gray-500">Total</span>
+                    <span class="text-3xl font-black text-primary">${{ "{:,.2f}".format(total) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const address = document.getElementById('address').value;
+        const payment_method = document.querySelector('input[name="payment_method"]:checked').value;
+        
+        const resp = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({address, payment_method})
+        });
+        
+        const data = await resp.json();
+        if(resp.ok) {
+            window.location.href = `/results?order_id=${data.order.order_id}&status=success`;
+        } else {
+            alert(data.error);
+        }
+    });
+</script>
+{% endblock %}

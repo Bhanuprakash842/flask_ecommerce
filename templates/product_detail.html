@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <a href="/" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-12 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to shop
+    </a>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div class="rounded-[3rem] overflow-hidden shadow-2xl relative">
+            <img src="{{ product.image_base64 or 'https://via.placeholder.com/500' }}" alt="{{ product.name }}" class="w-full h-auto">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark/20 to-transparent"></div>
+        </div>
+        
+        <div>
+            <span class="text-primary font-bold uppercase tracking-[0.3em] mb-4 block">{{ product.category }}</span>
+            <h1 class="text-5xl font-bold mb-6">{{ product.name }}</h1>
+            <div class="text-4xl font-black text-dark mb-8">${{ "{:,.2f}".format(product.price) }}</div>
+            
+            <p class="text-gray-600 text-lg leading-relaxed mb-10">
+                {{ product.description }}
+            </p>
+            
+            <div class="space-y-6">
+                <div class="flex items-center gap-4 p-4 rounded-2xl bg-secondary/10 border border-secondary/20">
+                    <div class="bg-white p-3 rounded-xl shadow-sm">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="font-bold">Authentic Product</div>
+                        <div class="text-sm text-gray-500">100% Quality Assurance</div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button onclick="addToCart({{ product.id }})" class="flex-1 btn-primary text-white py-5 rounded-2xl font-bold text-xl shadow-lg">Add to Cart</button>
+                    {% if username %}
+                    <a href="/edit/{{ product.id }}" class="flex-1 text-center bg-secondary/20 text-primary py-5 rounded-2xl font-bold text-xl border-2 border-primary/20 hover:bg-primary/10 transition-all">Edit Product</a>
+                    {% endif %}
+                    <button class="p-5 rounded-2xl border-2 border-secondary/30 hover:border-primary transition-all">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

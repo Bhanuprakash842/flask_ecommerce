@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-20">
+    <div class="bg-white rounded-[2.5rem] p-10 shadow-xl border border-secondary/20">
+        <h1 class="text-3xl font-bold mb-2">Join LuxeCart</h1>
+        <p class="text-gray-500 mb-8">Create your premium account today</p>
+        
+        <form id="registerForm" class="space-y-6">
+            <div class="space-y-2">
+                <label class="font-bold text-sm uppercase tracking-widest text-gray-400">Username</label>
+                <input type="text" id="username" required class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-sm uppercase tracking-widest text-gray-400">Email Address</label>
+                <input type="email" id="email" required class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-sm uppercase tracking-widest text-gray-400">Password</label>
+                <input type="password" id="password" required class="w-full px-6 py-4 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+            </div>
+            
+            <button type="submit" class="w-full btn-primary text-white py-4 rounded-2xl font-bold text-lg shadow-lg mt-4">Create Account</button>
+        </form>
+        
+        <p class="text-center mt-8 text-gray-500">
+            Already have an account? <a href="/login" class="text-primary font-bold hover:underline">Sign In</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const resp = await fetch('/api/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, email, password})
+        });
+        
+        const data = await resp.json();
+        if(resp.ok) {
+            alert('Registration successful! Please login.');
+            window.location.href = '/login';
+        } else {
+            alert(data.error || 'Registration failed');
+        }
+    });
+</script>
+{% endblock %}

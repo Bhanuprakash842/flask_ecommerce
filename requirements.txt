@@ -1,0 +1,7 @@
+flask
+pydantic
+email-validator
+flask-jwt-extended
+python-multipart
+flask-sqlalchemy
+pytest
