@@ -38,7 +38,7 @@
                 </div>
                 
                 <div class="flex gap-4">
-                    <button onclick="addToCart({{ product.id }})" class="flex-1 btn-primary text-white py-5 rounded-2xl font-bold text-xl shadow-lg">Add to Cart</button>
+                    <button onclick="addToCart('{{ product.id }}')" class="flex-1 btn-primary text-white py-5 rounded-2xl font-bold text-xl shadow-lg">Add to Cart</button>
                     {% if username %}
                     <a href="/edit/{{ product.id }}" class="flex-1 text-center bg-secondary/20 text-primary py-5 rounded-2xl font-bold text-xl border-2 border-primary/20 hover:bg-primary/10 transition-all">Edit Product</a>
                     {% endif %}
