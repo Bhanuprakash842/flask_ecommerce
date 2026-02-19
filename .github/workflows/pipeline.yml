@@ -1,14 +1,14 @@
-name: Flask Ecommerce CI/CD Pipeline
+name: Flask Ecommerce CI/CD
 
 on:
   push:
-    branches: [ "main", "dev", "prod", "feature/*" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "dev", "prod" ]
+    branches: [ "main" ]
 
 jobs:
   test:
-    name: Run Tests
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -29,24 +29,17 @@ jobs:
       run: |
         pytest --verbose
 
-  deploy-dev:
-    name: Deploy to Development
-    needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
-    runs-on: ubuntu-latest
-    steps:
-    - name: Dev Deployment Placeholder
-      run: |
-        echo "Tests passed! Deploying to the DEVELOPMENT server..."
-        # Add your Dev deployment commands here (e.g. Render, Heroku, or SSH)
-
-  deploy-prod:
+  deploy:
     name: Deploy to Production
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    
     steps:
-    - name: Production Deployment Placeholder
+    - uses: actions/checkout@v4
+    
+    - name: Deploy Application
       run: |
-        echo "Tests passed! Triggering PRODUCTION deployment..."
-        # Add your Production deployment commands here (e.g. AWS, DigitalOcean)
+        echo "Tests passed successfully!"
+        echo "Deploying the latest code from 'main' branch to the production server..."
+        # Add your production deployment commands here (e.g. AWS, Heroku, or SSH to your server)
