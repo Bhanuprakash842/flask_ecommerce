@@ -1,16 +1,24 @@
 import os
-import base64
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, ProductModel, UserModel, ProductCreate, UserCreate, UserLogin, CartItem, CheckoutRequest
 from datetime import datetime, timedelta
 import uuid
+import base64
+import json
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "super-secret-key-ecommerce"
-app.config['JWT_SECRET_KEY'] = "jwt-secret-key-ecommerce"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
+app.secret_key = os.getenv('SECRET_KEY', 'default-secret-key')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-jwt-key')
+
+# Database Configuration (SQLite)
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(basedir, 'instance', 'ecommerce.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
@@ -21,32 +29,14 @@ jwt = JWTManager(app)
 # Create Database tables
 with app.app_context():
     db.create_all()
-    # Add initial data if empty
+    # Seed initial products if empty
     if not ProductModel.query.first():
-        initial_products = [
-            ProductModel(
-                name="Nova Headphones",
-                description="Premium wireless noise-cancelling headphones for an immersive experience.",
-                price=199.99,
-                category="Electronics",
-                image_base64=None
-            ),
-            ProductModel(
-                name="Smart Watch Pro",
-                description="Tracks your health, notifications, and fitness goals with style.",
-                price=249.50,
-                category="Wearables",
-                image_base64=None
-            ),
-            ProductModel(
-                name="Minimalist Lamp",
-                description="Sleek wooden base lamp for a modern and warm workspace ambiance.",
-                price=45.00,
-                category="Home Decor",
-                image_base64=None
-            )
+        sample_products = [
+            ProductModel(name='Nova Headphones', description='Premium wireless noise-cancelling headphones.', price=199.99, category='Electronics'),
+            ProductModel(name='Smart Watch Pro', description='Tracks your health and fitness goals.', price=249.50, category='Wearables'),
+            ProductModel(name='Minimalist Lamp', description='Sleek wooden base lamp for a modern workspace.', price=45.00, category='Home Decor')
         ]
-        db.session.bulk_save_objects(initial_products)
+        db.session.bulk_save_objects(sample_products)
         db.session.commit()
 
 # Helper: Convert Image to Base64
@@ -57,6 +47,10 @@ def get_image_base64(file):
         # Return proper data URL format
         return f"data:{file.content_type};base64,{encoded_string}"
     return None
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()}), 200
 
 # --- AUTH ROUTES ---
 @app.route('/api/register', methods=['POST'])
@@ -69,7 +63,7 @@ def register():
         new_user = UserModel(
             username=data.username,
             email=data.email,
-            password=data.password # In production, hash this!
+            password=generate_password_hash(data.password)
         )
         db.session.add(new_user)
         db.session.commit()
@@ -81,8 +75,8 @@ def register():
 def login():
     try:
         data = UserLogin(**request.json)
-        user = UserModel.query.filter_by(username=data.username, password=data.password).first()
-        if not user:
+        user = UserModel.query.filter_by(username=data.username).first()
+        if not user or not check_password_hash(user.password, data.password):
             return jsonify({"error": "Invalid credentials"}), 401
         
         access_token = create_access_token(identity=data.username, expires_delta=timedelta(hours=24))
@@ -118,6 +112,7 @@ def get_items():
             "image_base64": p.image_base64,
             "created_at": p.created_at.isoformat()
         })
+    
     return jsonify(result)
 
 @app.route('/api/items', methods=['POST'])
@@ -134,6 +129,7 @@ def add_item():
         )
         db.session.add(new_product)
         db.session.commit()
+        
         return jsonify({
             "id": new_product.id,
             "name": new_product.name,
@@ -170,6 +166,7 @@ def update_item_api(item_id):
                 product.image_base64 = get_image_base64(file)
         
         db.session.commit()
+
         return jsonify({"message": "Product updated successfully"})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -183,6 +180,7 @@ def delete_item(item_id):
     
     db.session.delete(product)
     db.session.commit()
+
     return jsonify({"message": "Item deleted"}), 200
 
 # --- CART & CHECKOUT ---

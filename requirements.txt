@@ -4,4 +4,8 @@ email-validator
 flask-jwt-extended
 python-multipart
 flask-sqlalchemy
+mysql-connector-python
+cryptography
 pytest
+python-dotenv
+gunicorn
